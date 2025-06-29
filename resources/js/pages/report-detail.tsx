@@ -160,18 +160,21 @@ export default function ReportDetail(props: IReportDetailProps) {
                             dataIndex: '',
                             key: 'no',
                             render: (_, _r, index) => index + 1,
+                            width: 60,
                         },
                         {
                             title: 'Employee Name',
                             dataIndex: 'name',
                             key: 'name',
                             isSortable: true,
+                            width: 100,
                         },
                         {
                             title: 'Division',
                             dataIndex: 'division',
                             key: 'division',
                             isSortable: true,
+                            width: 90,
                         },
                         {
                             title: 'Breakfast',
@@ -214,6 +217,7 @@ export default function ReportDetail(props: IReportDetailProps) {
                             title: 'Action',
                             dataIndex: '',
                             key: 'action',
+                            width: 80,
                             render: (_, r) => {
                                 return (
                                     <Popover

@@ -52,6 +52,7 @@ export function SimpleTable<T>(props: ISimpleTableProps<T>) {
             {props.headerComponent?.()}
             <div className="overflow-hidden">
                 <Table
+                    scroll={{ x: 'max-content' }}
                     sticky={!isMobile}
                     className="mt-2 max-h-[69dvh] overflow-scroll"
                     pagination={false}

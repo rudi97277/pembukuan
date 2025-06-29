@@ -3,7 +3,7 @@ import { SimpleTable } from '@/components/simple-table';
 import AppLayout from '@/layouts/app-layout';
 import { names } from '@/lib/utils';
 import { IReport, IReportFetch, IReportProps } from '@/types/report';
-import { DeleteOutlined, DownloadOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
 import Done from '@svg/done.svg';
 import NotComplete from '@svg/not_complete.svg';
@@ -125,6 +125,9 @@ export default function Report(props: IReportProps) {
                                         content={() => (
                                             <div className="max-w-[300px]">
                                                 <Calendar
+                                                    headerRender={({ value }) => (
+                                                        <p className="mb-2 text-center font-bold">{value.format('MMMM YYYY')}</p>
+                                                    )}
                                                     fullscreen={false}
                                                     validRange={[dayjs(r.period), dayjs(r.period).endOf('month')]}
                                                     defaultValue={dayjs(r.period)}
@@ -169,13 +172,6 @@ export default function Report(props: IReportProps) {
                                                 >
                                                     <DeleteOutlined style={{ color: 'red', marginRight: 4 }} />
                                                     Delete
-                                                </Button>
-                                                <Button
-                                                    className="rounded-t-none! border-none! p-6! hover:!bg-[#FD79001A] focus:bg-[#FD79001A]"
-                                                    type="text"
-                                                >
-                                                    <DownloadOutlined style={{ color: '#FD7900', marginRight: 4 }} />
-                                                    Export
                                                 </Button>
                                             </Flex>
                                         )}
