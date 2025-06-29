@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect('dashboard'));
 Route::get('login', [AuthController::class, 'login'])->name('login');
-Route::get('/artisan/migrate', function () {
-    if (request()->key === 'vTTAAR0dp93hwNT2h48ZUIBdxE5wIbyH') {
-        Artisan::call('migrate --seed');
-    }
-});
 
 
 Route::middleware([])->group(function () {
