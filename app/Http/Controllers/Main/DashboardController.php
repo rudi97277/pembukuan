@@ -19,6 +19,13 @@ class DashboardController extends Controller
         $request->validate([
             'period' => 'nullable|date|date_format:Y-m'
         ]);
+
+        if (!$request->period) {
+            $request->merge([
+                'period' => date('Y-m')
+            ]);
+        }
+
         $mealSave = $this->reportRepository->getMealSaveTotal($request);
         $mealSaveYearly = $this->reportRepository->getMealSaveTotalYearly($request);
 

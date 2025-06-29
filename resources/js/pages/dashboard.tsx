@@ -28,7 +28,16 @@ export default function Dashboard(props: IDashboardProps) {
             <Head title="Dashboard" />
 
             {/* <div className="overflow-hidden rounded border border-gray-300 shadow">
-                <BlobProvider document={<MonthlyReport />}>
+                <BlobProvider
+                    document={
+                        <MonthlyReport
+                            meal={props.meal}
+                            save={props.save}
+                            division_data={props.division_data}
+                            period={props.period !== null ? dayjs(props.period).format('MMMM YYYY') : dayjs().format('YYYY')}
+                        />
+                    }
+                >
                     {({ url, loading }) =>
                         loading ? (
                             <p className="p-4">Generating preview...</p>
@@ -48,7 +57,17 @@ export default function Dashboard(props: IDashboardProps) {
 
             <div className={`flex flex-col ${isMobile ? 'p-4' : 'p-8'}`}>
                 <div className="flex-end mb-4 flex justify-end gap-2">
-                    <PDFDownloadLink document={<MonthlyReport />} fileName="sales-report.pdf">
+                    <PDFDownloadLink
+                        document={
+                            <MonthlyReport
+                                meal={props.meal}
+                                save={props.save}
+                                division_data={props.division_data}
+                                period={props.period !== null ? dayjs(props.period).format('MMMM YYYY') : dayjs().format('YYYY')}
+                            />
+                        }
+                        fileName={`monthly-report-${dayjs(props.period || undefined).format('MMMM-YYYY')}.pdf`}
+                    >
                         {({ loading }) => (
                             <Button type="primary" className="bg-[#FF6A0020]! text-[#FF6A00]!">
                                 {loading ? 'Loading...' : 'Export Pdf'}
@@ -57,7 +76,12 @@ export default function Dashboard(props: IDashboardProps) {
                         )}
                     </PDFDownloadLink>
 
-                    <DatePicker picker="month" allowClear onChange={handleChangePeriod} defaultValue={props.period ? dayjs(props.period) : null} />
+                    <DatePicker
+                        picker="month"
+                        allowClear={false}
+                        onChange={handleChangePeriod}
+                        defaultValue={props.period ? dayjs(props.period) : null}
+                    />
                 </div>
                 <TrendChart trend={props.trend} />
                 <Flex gap={20} className="flex-col lg:flex-row">

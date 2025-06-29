@@ -2,7 +2,6 @@ import { Button, Card, Form, Input } from 'antd';
 
 export default function Login() {
     const [form] = Form.useForm();
-    console.log({ a: form.getFieldsValue() });
     return (
         <div
             className="flex h-screen w-screen items-center justify-center"

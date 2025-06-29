@@ -37,6 +37,9 @@ export default function AppLayout({ children, header }: AppLayoutProps) {
             theme="dark"
             className="bg-[#26252C]!"
             defaultSelectedKeys={selectedIndex}
+            onClick={() => {
+                isMobile && setCollapsed(true);
+            }}
             items={menus.map((item, idx) => ({
                 key: idx,
                 icon: item.icon,

@@ -86,7 +86,6 @@ export default function ReportDetail(props: IReportDetailProps) {
 
     const submitVendor = async () => {
         form.validateFields().then((values) => {
-            console.log({ values });
             router.post(route(names.reports.details.store, { report: report_id }), { ...values, date: date });
             setIsModalOpen(false);
             form.resetFields();
