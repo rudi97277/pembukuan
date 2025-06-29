@@ -25,6 +25,7 @@
     "dependencies": {
         "@ant-design/icons": "^6.0.0",
         "@inertiajs/react": "^2.0.0",
+        "@react-pdf/renderer": "^4.3.0",
         "@tailwindcss/vite": "^4.0.6",
         "@types/lodash": "^4.17.18",
         "@types/react": "^19.0.3",
@@ -40,6 +41,7 @@
         "lodash": "^4.17.21",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "recharts": "^3.0.0",
         "tailwind-merge": "^3.0.1",
         "tailwindcss": "^4.0.0",
         "tailwindcss-animate": "^1.0.7",

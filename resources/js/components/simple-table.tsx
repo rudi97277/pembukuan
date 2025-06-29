@@ -21,9 +21,10 @@ interface ISimpleTableProps<T> {
         onPageSizeChange?: (page_size: number) => void;
     };
     columns: CustomColumnsType<T>;
-    sorted: Partial<Record<keyof T, TSortDirection>>;
-    fetchData: (props: any) => void;
+    sorted?: Partial<Record<keyof T, TSortDirection>>;
+    fetchData?: (props: any) => void;
     headerComponent?: () => JSX.Element;
+    isPadding?: boolean;
 }
 
 export function SimpleTable<T>(props: ISimpleTableProps<T>) {
@@ -31,20 +32,28 @@ export function SimpleTable<T>(props: ISimpleTableProps<T>) {
     const newColumns = props.columns.map(({ isSortable, ...column }) => {
         return {
             ...column,
-            title: isSortable ? (
-                <TitleSort<T> name={column.dataIndex as keyof T} sorted={props.sorted} title={column.title as string} fetchData={props.fetchData} />
-            ) : (
-                column.title
-            ),
+            title:
+                isSortable && props.sorted ? (
+                    <TitleSort<T>
+                        name={column.dataIndex as keyof T}
+                        sorted={props.sorted}
+                        title={column.title as string}
+                        fetchData={props?.fetchData}
+                    />
+                ) : (
+                    column.title
+                ),
         };
     });
     return (
-        <div className="h-full gap-2 rounded-2xl p-4 shadow-[0px_4px_3px_0px_#4852610F]">
+        <div
+            className={`h-full gap-2 rounded-2xl ${props.isPadding || props.isPadding === undefined ? 'p-4' : ''} shadow-[0px_4px_3px_0px_#4852610F]`}
+        >
             {props.headerComponent?.()}
             <div className="overflow-hidden">
                 <Table
                     sticky={!isMobile}
-                    className="max-h-[69dvh] overflow-scroll"
+                    className="mt-2 max-h-[69dvh] overflow-scroll"
                     pagination={false}
                     dataSource={props.dataSource}
                     columns={newColumns}

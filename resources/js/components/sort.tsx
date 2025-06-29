@@ -1,4 +1,4 @@
-import { SwapLeftOutlined, SwapOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, SwapOutlined } from '@ant-design/icons';
 import { JSX } from 'react';
 
 export type TSortDirection = 'asc' | 'desc' | null | undefined;
@@ -9,9 +9,9 @@ function SortArrow({ direction }: { direction: TSortDirection }): JSX.Element | 
     ) : direction === null ? (
         <SwapOutlined style={{ transform: 'rotate(90deg)', fontSize: 12, color: 'grey' }} />
     ) : direction === 'asc' ? (
-        <SwapLeftOutlined style={{ rotate: '90deg', color: 'green' }} />
+        <ArrowUpOutlined style={{ color: 'green' }} />
     ) : (
-        <SwapLeftOutlined style={{ rotate: '-90deg', color: 'red' }} />
+        <ArrowDownOutlined style={{ color: 'red' }} />
     );
 }
 

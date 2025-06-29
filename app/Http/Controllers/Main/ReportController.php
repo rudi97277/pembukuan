@@ -7,13 +7,16 @@ use App\Models\Division;
 use App\Models\Employee;
 use App\Models\Report;
 use App\Models\ReportDetail;
+use App\Repositories\ReportRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        private ReportRepository $repository
+    ) {}
     public function index(Request $request)
     {
         $request->validate([
@@ -24,25 +27,11 @@ class ReportController extends Controller
         ]);
 
         $year = $request->input('year', date('Y'));
-
-        $data = Report::whereYear('period', $year)
-            ->orderBy('period', 'desc')
-            ->with(['details' => fn($q) => $q->select('report_id', 'date')->groupBy('date', 'report_id')])
-            ->selectRaw("
-                id,
-                id as `key`,
-                period,
-                is_complete,
-                working_days
-
-            ")
-            ->paginate($request->input('page_size', 10));
-
-        $sorted = $request->sort ?? [];
+        $data = $this->repository->getPaginatedReports($request, $year);
 
         return Inertia::render('report', [
             'paginated' => $data,
-            'sorted' => $sorted,
+            'sorted' => $request->sort ?? [],
             'year' => $year,
             'keyword' => $request->keyword,
         ]);
@@ -57,67 +46,21 @@ class ReportController extends Controller
             'date' => 'required|date'
         ]);
 
-        $count = ReportDetail::where(['report_id' => $id, 'date' => $request->date])->count();
-        if ($count == 0) {
-            Report::where('id', $id)->update(['working_days' => DB::raw('working_days + 1')]);
-            $employees = Employee::where('type', Employee::VENDOR)->get();
-            $inserts = [];
-            foreach ($employees as $employee) {
-                $inserts[] = [
-                    'report_id' => $id,
-                    'date' => $request->date,
-                    'quantity' => 1,
-                    'updated_at' => now(),
-                    'created_at' => now(),
-                    'employee_id' => $employee->id,
-                    ...$employee->only('breakfast', 'lunch', 'dinner', 'is_claim_save')
-                ];
-            }
-            ReportDetail::insert($inserts);
-        }
+        $this->repository->generateReportDetails($request, $id);
+        $usedDates = $this->repository->getReportUsedDates($id);
+        $divisions = Division::selectRaw("name as label,name as value")->get();
 
-        $usedDates = ReportDetail::where(['report_id' => $id])->select('report_id', 'date')->groupBy('date', 'report_id')->get();
-        $sorted = $request->sort ?? [];
-
-        $data = ReportDetail::from('report_details as rd')->where('rd.report_id', $id)
-            ->where('rd.date', $request->date)
-            ->join('employees as e', 'e.id', 'rd.employee_id')
-            ->join('divisions as d', 'd.id', 'e.division_id')
-            ->when($request->keyword, fn($q) => $q->where('e.name', 'like', "%{$request->keyword}%"))
-            ->selectRaw("
-                rd.id as `key`,
-                rd.id,
-                e.name,
-                d.name as division,
-                rd.breakfast,
-                rd.lunch,
-                rd.dinner,
-                rd.is_claim_save,
-                (
-                    case when rd.breakfast = 'Save' and rd.is_claim_save = 1 then 40000*rd.quantity else 0 end +
-                    case when rd.lunch = 'Save' and rd.is_claim_save = 1 then 60000*rd.quantity else 0 end +
-                    case when rd.dinner = 'Save' and rd.is_claim_save = 1 then 60000*rd.quantity else 0 end
-                ) as save_total
-            ")
-            ->orderBy('rd.created_at', 'desc')
-            ->when($request->division, fn($q) => $q->where('d.name', $request->division))
-            ->paginate($request->input('page_size', 10));
-
-        $division = Division::selectRaw("
-            name as label,
-            name as value
-        ")->get();
-
+        $data = $this->repository->getPaginatedReportDetails($request, $id);
 
         return Inertia::render('report-detail', [
-            'sorted' => $sorted,
+            'sorted' => $request->sort ?? [],
             'date' => $request->date ?? now(),
             'keyword' => $request->keyword,
             'paginated' => $data,
             'report_id' => $id,
             'used_dates' => $usedDates,
             'division' => $request->division,
-            'divisions' => $division
+            'divisions' => $divisions
         ]);
     }
 
@@ -144,6 +87,7 @@ class ReportController extends Controller
         $request->validate([
             'date' => 'required|date',
             'name' => 'required|string',
+            'employee_id' => 'required|integer',
             'division' => 'required|string',
             'type' => 'required|in:vendor,guest',
             'breakfast' => 'required|in:Meal,Save',
@@ -155,12 +99,17 @@ class ReportController extends Controller
 
         $division = Division::where('name', $request->division)->first();
 
-        $employee = Employee::create([
-            ...$request->only('name',  'type', 'breakfast', 'lunch', 'dinner', 'is_claim_save'),
-            'division_id' => $division->id,
-            'is_active' => true,
+        if ($request->employee_id == 0) {
+            $employee = Employee::create([
+                ...$request->only('name',  'type', 'breakfast', 'lunch', 'dinner', 'is_claim_save'),
+                'division_id' => $division->id,
+                'is_active' => true,
 
-        ]);
+            ]);
+        } else {
+            $employee = Employee::where('id', $request->employee_id)->first();
+        }
+
 
         ReportDetail::create([
             'date' => $request->date,
@@ -171,14 +120,26 @@ class ReportController extends Controller
         ]);
     }
 
-    public function store()
+    public function deleteDetail(int $reportId, int $detailId)
     {
-        $now = Carbon::now()->firstOfMonth();
-        $currentReport = Report::where('period', $now->format('Y-m-d'))->first();
+        ReportDetail::where([
+            'id' => $detailId,
+            'report_id' => $reportId
+        ])->delete();
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'period' => 'nullable|date'
+        ]);
+
+        $period = Carbon::parse($request->period)->firstOfMonth();
+        $currentReport = Report::where('period', $period->format('Y-m-d'))->first();
 
         if (!$currentReport) {
             Report::create([
-                'period' => $now->format('Y-m-d'),
+                'period' => $period->format('Y-m-d'),
                 'working_days' => 0,
                 'is_complete' => false
             ]);

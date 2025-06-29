@@ -38,15 +38,15 @@ class DatabaseSeeder extends Seeder
             ]
         ]);
 
-        Employee::create([
-            'name' => 'Rudi',
-            'division_id' => 1,
-            'type' => Employee::VENDOR,
-            'is_active' => true,
-            'breakfast' => Employee::MEAL,
-            'lunch' => Employee::MEAL,
-            'dinner' => Employee::MEAL,
-            'is_claim_save' => false
-        ]);
+        // Employee::create([
+        //     'name' => 'Rudi',
+        //     'division_id' => 1,
+        //     'type' => Employee::VENDOR,
+        //     'is_active' => true,
+        //     'breakfast' => Employee::MEAL,
+        //     'lunch' => Employee::MEAL,
+        //     'dinner' => Employee::MEAL,
+        //     'is_claim_save' => false
+        // ]);
     }
 }

@@ -88,7 +88,7 @@ export default function AppLayout({ children, header }: AppLayoutProps) {
                 </Drawer>
             )}
             <Layout className="h-screen overflow-y-hidden">
-                <Header style={{ paddingLeft: 16, fontSize: 18 }}>
+                <Header style={{ paddingLeft: 28, fontSize: 18 }}>
                     <Flex align="center" gap={5}>
                         {isMobile ? CloseButton : ''}
                         {header}

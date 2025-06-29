@@ -20,7 +20,7 @@ export interface IReportProps {
     };
     year: string;
     keyword: string;
-    sorted: Partial<Record<keyof IReport, TSortDirection>>;
+    sorted?: Partial<Record<keyof IReport, TSortDirection>>;
 }
 
 export interface IReportFetch {

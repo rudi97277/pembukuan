@@ -1,13 +1,13 @@
 import { InputSearch } from '@/components/input-search';
-import { Label } from '@/components/label';
 import { Meal } from '@/components/meal';
 import { SimpleTable } from '@/components/simple-table';
+import { VendorModal } from '@/components/vendor-modal';
 import AppLayout from '@/layouts/app-layout';
 import { names } from '@/lib/utils';
 import { IReportDetail, IReportDetailFetch, IReportDetailProps } from '@/types/report-detail';
-import { DoubleLeftOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
-import { Button, DatePicker, Divider, Flex, Form, Input, InputNumber, Modal, Select, Switch } from 'antd';
+import { Button, DatePicker, Flex, Form, Popover, Select, Switch } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { debounce } from 'lodash';
 import { useMemo, useState } from 'react';
@@ -79,117 +79,35 @@ export default function ReportDetail(props: IReportDetailProps) {
         return (
             <div className={`relative ${classes}`}>
                 <p className="text-center">{dayjs(date).format('DD')}</p>
-                {dateMap[formatted] && <div className="pointer-events-none absolute inset-0 top-2 text-gray-300">•</div>}
+                {dateMap?.[formatted] && <div className="pointer-events-none absolute inset-0 top-2 text-gray-300">•</div>}
             </div>
         );
     };
 
     const submitVendor = async () => {
         form.validateFields().then((values) => {
+            console.log({ values });
             router.post(route(names.reports.details.store, { report: report_id }), { ...values, date: date });
             setIsModalOpen(false);
             form.resetFields();
         });
     };
 
-    const FormModal = (
-        <Modal
-            title={
-                <div className="flex flex-col gap-3">
-                    <Flex className="mb-2 items-center" gap={10}>
-                        <div
-                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[#FF6A00] p-2"
-                            onClick={() => setIsModalOpen(false)}
-                        >
-                            <DoubleLeftOutlined style={{ color: 'white' }} />
-                        </div>
-                        {`Assign Vendor - ${dayjs(props.date).format('DD MMMM YYYY')}`}
-                    </Flex>
-                    <Divider className="m-0!" />
-                </div>
-            }
-            open={isModalOpen}
-            okButtonProps={{ hidden: true }}
-            cancelButtonProps={{ hidden: true }}
-            onOk={() => console.log({ a: form.getFieldsValue() })}
-            closable={false}
-            okText="Save"
-            onCancel={() => setIsModalOpen(false)}
-        >
-            <Form form={form} layout="vertical">
-                <Form.Item name="type" noStyle />
-                <div className="flex w-full items-end">
-                    <Form.Item name="type" label={<Label text="Name" />} initialValue={'vendor'} rules={[{ required: true }]} required={false}>
-                        <Select
-                            className="min-w-[20px]"
-                            placeholder="Type"
-                            onChange={(value) => setType(value)}
-                            options={[
-                                { label: 'Vendor', value: 'vendor' },
-                                { label: 'Guest', value: 'guest' },
-                            ]}
-                        />
-                    </Form.Item>
-                    <Form.Item name="name" className="w-full" rules={[{ required: true }, { type: 'string' }]}>
-                        <Input placeholder="Employee name" />
-                    </Form.Item>
-                    <Form.Item
-                        name="quantity"
-                        initialValue={1}
-                        rules={[{ required: true, message: 'Required' }]}
-                        style={{ display: type === 'guest' ? 'block' : 'none' }}
-                    >
-                        <InputNumber min={1} placeholder="qty" className="max-w-16" />
-                    </Form.Item>
-                </div>
-                <Form.Item name="division" label={<Label text="Division" />} rules={[{ required: true }]} required={false}>
-                    <Select placeholder="Division" options={divisions} />
-                </Form.Item>
-                <Label text="Choice" />
-                <div className="mt-2 flex w-full flex-col gap-2 rounded-2xl border border-[#D0D5DD] p-4">
-                    <Flex className="items-center justify-end">
-                        <Label text="Breakfast" className="me-auto font-bold" />
-                        <Form.Item name="breakfast" initialValue={'Meal'} className="mb-0!" rules={[{ required: true }]} required={false}>
-                            <Meal value={'Meal'} className="h-full" />
-                        </Form.Item>
-                    </Flex>
-                    <Flex className="items-center justify-end">
-                        <Label text="Lunch" className="me-auto font-bold" />
-                        <Form.Item name="lunch" initialValue={'Meal'} className="mb-0!" rules={[{ required: true }]} required={false}>
-                            <Meal value={'Meal'} className="h-full" />
-                        </Form.Item>
-                    </Flex>
-                    <Flex className="items-center justify-end">
-                        <Label text="Dinner" className="me-auto font-bold" />
-                        <Form.Item name="dinner" initialValue={'Meal'} className="mb-0!" rules={[{ required: true }]} required={false}>
-                            <Meal value={'Meal'} className="h-full" />
-                        </Form.Item>
-                    </Flex>
-                </div>
-                <div className="mt-4 flex justify-end gap-4">
-                    <div className="mr-auto flex items-center gap-2">
-                        <Label text="Claim Save" />
-                        <Flex className="items-center justify-end">
-                            <Form.Item name="is_claim_save" initialValue={false} className="mb-0!" rules={[{ required: true }]} required={false}>
-                                <Switch />
-                            </Form.Item>
-                        </Flex>
-                    </div>
-                    <Button variant="solid" type="default" onClick={() => setIsModalOpen(false)}>
-                        Cancel
-                    </Button>
-                    <Button variant="solid" type="primary" htmlType="submit" onClick={submitVendor}>
-                        Save
-                    </Button>
-                </div>
-            </Form>
-        </Modal>
-    );
+    const handleDeleteDetail = (id: number) => {
+        router.delete(route(names.reports.details.delete, { report: report_id, detail: id }));
+    };
 
     return (
         <AppLayout header={`${dayjs(props.date).format('dddd, DD MMMM YYYY')}`}>
             <Head title="Report Detail" />
-            {FormModal}
+            <VendorModal
+                date={props.date}
+                divisions={divisions}
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                form={form}
+                submitVendor={submitVendor}
+            />
             <div className="rounded-2xl p-4">
                 <SimpleTable<IReportDetail>
                     dataSource={data}
@@ -211,8 +129,8 @@ export default function ReportDetail(props: IReportDetailProps) {
                                         className="!w-[120px]"
                                         defaultValue={dayjs(date)}
                                         onChange={(v) => handleDate(v)}
-                                        minDate={dayjs().startOf('month')}
-                                        maxDate={dayjs().endOf('month')}
+                                        minDate={dayjs(date).startOf('month')}
+                                        maxDate={dayjs(date).endOf('month')}
                                         allowClear={false}
                                         showNow={false}
                                         cellRender={(date) => renderDate(date)}
@@ -290,7 +208,35 @@ export default function ReportDetail(props: IReportDetailProps) {
                             title: 'Save Total',
                             dataIndex: 'save_total',
                             key: 'save_total',
+                            isSortable: true,
                             render: (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
+                        },
+                        {
+                            title: 'Action',
+                            dataIndex: '',
+                            key: 'action',
+                            render: (_, r) => {
+                                return (
+                                    <Popover
+                                        classNames={{ body: 'p-0!' }}
+                                        trigger="click"
+                                        content={() => (
+                                            <Flex vertical align="center" justify="center" gap={1}>
+                                                <Button
+                                                    onClick={() => handleDeleteDetail(r.id)}
+                                                    className="rounded-b-none! border-none! p-6! hover:!bg-[#FD79001A] focus:bg-[#FD79001A]"
+                                                    type="text"
+                                                >
+                                                    <DeleteOutlined style={{ color: 'red', marginRight: 4 }} />
+                                                    Delete
+                                                </Button>
+                                            </Flex>
+                                        )}
+                                    >
+                                        <MoreOutlined style={{ color: '#FD7900', fontSize: 20 }} />
+                                    </Popover>
+                                );
+                            },
                         },
                     ]}
                 />

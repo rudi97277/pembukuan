@@ -20,8 +20,6 @@ export default function Report(props: IReportProps) {
         sorted,
     } = props;
 
-    console.log({ props });
-
     const onDateClick = (day: Dayjs | undefined, item: IReport) => {
         const date = day?.format('YYYY-MM-DD');
         router.visit(route(names.reports.show, { id: item.id }), {
@@ -79,10 +77,24 @@ export default function Report(props: IReportProps) {
                                         onChange={(v) => handleYear(v)}
                                         allowClear={false}
                                     />
-                                    <Button variant="solid" type="primary" onClick={() => router.post(route(names.reports.store))}>
-                                        <PlusOutlined />
-                                        Period
-                                    </Button>
+                                    <Popover
+                                        trigger="click"
+                                        placement="bottom"
+                                        content={() => (
+                                            <DatePicker
+                                                picker="month"
+                                                className="w-[100px] min-w-[100px]"
+                                                minDate={dayjs(year).startOf('year')}
+                                                maxDate={dayjs(year).endOf('year')}
+                                                onChange={(date) => router.post(route(names.reports.store), { period: date.format('YYYY-MM-01') })}
+                                            />
+                                        )}
+                                    >
+                                        <Button variant="solid" type="primary">
+                                            <PlusOutlined />
+                                            Period
+                                        </Button>
+                                    </Popover>
                                 </Flex>
                             </Flex>
                         );
@@ -168,7 +180,7 @@ export default function Report(props: IReportProps) {
                                             </Flex>
                                         )}
                                     >
-                                        <MoreOutlined style={{ color: '#FD7900', fontSize: 25 }} />
+                                        <MoreOutlined style={{ color: '#FD7900', fontSize: 20 }} />
                                     </Popover>
                                 );
                             },

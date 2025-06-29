@@ -8,6 +8,9 @@ interface IInputSearchProps {
 export function InputSearch(props: IInputSearchProps) {
     return (
         <Input
+            style={{
+                fontSize: 14,
+            }}
             placeholder="Search"
             defaultValue={props.defaultValue}
             onChange={(e) => props.handleChange(e.target.value)}

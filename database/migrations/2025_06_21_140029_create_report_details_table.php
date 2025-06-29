@@ -23,6 +23,7 @@ return new class extends Migration
             $table->enum('dinner', [Employee::MEAL, Employee::SAVE])->nullable();
             $table->boolean('is_claim_save')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

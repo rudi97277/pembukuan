@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const names = {
-    dashboard: 'dashboard',
+    dashboard: 'dashboard.index',
     reports: {
         index: 'reports.index',
         store: 'reports.store',
@@ -15,6 +15,11 @@ export const names = {
         details: {
             update: 'reports.details.update',
             store: 'reports.details.store',
+            delete: 'reports.details.delete',
         },
     },
+    employees: {
+        list: 'employees.list',
+    },
+    login: 'login',
 };

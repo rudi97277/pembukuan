@@ -17,12 +17,13 @@ type TAppContext = {
 };
 
 export const AppProvider = ({ children }: AppLayoutProps) => {
-    const [collapsed, setCollapsed] = useState<boolean>(true);
+    const [collapsed, setCollapsed] = useState<boolean>(false);
     const [isMobile, setIsMobile] = useState<boolean>(false);
 
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth <= 768);
+            setCollapsed(window.innerWidth <= 768);
         };
 
         handleResize();
