@@ -4,10 +4,17 @@ use App\Http\Controllers\Main\AuthController;
 use App\Http\Controllers\Main\DashboardController;
 use App\Http\Controllers\Main\EmployeeController;
 use App\Http\Controllers\Main\ReportController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect('dashboard'));
 Route::get('login', [AuthController::class, 'login'])->name('login');
+Route::get('/artisan/migrate', function () {
+    if (request()->key === 'vTTAAR0dp93hwNT2h48ZUIBdxE5wIbyH') {
+        Artisan::call('migrate --seed');
+    }
+});
+
 
 Route::middleware([])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
