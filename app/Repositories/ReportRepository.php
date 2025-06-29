@@ -171,7 +171,7 @@ class ReportRepository
                 SUM(CASE WHEN rd.dinner = 'Meal' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_meal,
                 SUM(CASE WHEN rd.dinner = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
             ")
-            ->groupBy('d.id')
+            ->groupBy('d.id', 'd.name')
             ->get();
     }
 }
