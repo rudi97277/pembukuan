@@ -27,34 +27,6 @@ export default function Dashboard(props: IDashboardProps) {
         <AppLayout header="Dashboard">
             <Head title="Dashboard" />
 
-            {/* <div className="overflow-hidden rounded border border-gray-300 shadow">
-                <BlobProvider
-                    document={
-                        <MonthlyReport
-                            meal={props.meal}
-                            save={props.save}
-                            division_data={props.division_data}
-                            period={props.period !== null ? dayjs(props.period).format('MMMM YYYY') : dayjs().format('YYYY')}
-                        />
-                    }
-                >
-                    {({ url, loading }) =>
-                        loading ? (
-                            <p className="p-4">Generating preview...</p>
-                        ) : (
-                            <iframe
-                                src={url as string}
-                                style={{
-                                    width: '100%',
-                                    height: '800px',
-                                    border: 'none',
-                                }}
-                            />
-                        )
-                    }
-                </BlobProvider>
-            </div> */}
-
             <div className={`flex flex-col ${isMobile ? 'p-4' : 'p-8'}`}>
                 <div className="flex-end mb-4 flex justify-end gap-2">
                     <PDFDownloadLink

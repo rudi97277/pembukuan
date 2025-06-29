@@ -1,8 +1,8 @@
 import { names } from '@/lib/utils';
-import { CloseOutlined, DashboardFilled, SnippetsOutlined } from '@ant-design/icons';
-import { usePage } from '@inertiajs/react';
+import { CloseOutlined, DashboardFilled, LoginOutlined, SnippetsOutlined, UserOutlined } from '@ant-design/icons';
+import { router, usePage } from '@inertiajs/react';
 import MenuFold from '@svg/menu-fold.svg';
-import { Divider, Drawer, Flex, Image, Layout, Menu } from 'antd';
+import { Button, Divider, Drawer, Flex, Image, Layout, Menu, Typography } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 import { Content, Header } from 'antd/es/layout/layout';
 import { type ReactNode } from 'react';
@@ -12,6 +12,7 @@ import MenuItem from './menu-item';
 interface AppLayoutProps {
     children: ReactNode;
     header?: string;
+    auth: any;
 }
 
 const menus = [
@@ -27,8 +28,16 @@ const menus = [
     },
 ];
 
+interface IAuth {
+    user: {
+        name: string;
+        email: string;
+    };
+}
+
 export default function AppLayout({ children, header }: AppLayoutProps) {
     const page = usePage();
+    const auth = page.props.auth as IAuth;
     const { collapsed, setCollapsed, isMobile } = useAppContext();
     const selectedIndex: string[] = menus.map((item, idx) => (page.url.startsWith(item.href) ? idx.toString() : ''));
 
@@ -73,8 +82,35 @@ export default function AppLayout({ children, header }: AppLayoutProps) {
     return (
         <Layout className="overflow-hidden">
             <Sider trigger={null} collapsed={collapsed} className={`hidden sm:block`}>
-                {DesktopHeader}
-                {Menus}
+                <div className="relative">
+                    {DesktopHeader}
+                    {Menus}
+                </div>
+                <div className="absolute bottom-0 w-full p-2 font-semibold text-white">
+                    <div
+                        style={{ background: '#4B556396', backdropFilter: 'blur(21.700000762939453px)' }}
+                        className="flex w-full flex-row items-center justify-center gap-2 rounded-xl p-2"
+                    >
+                        {collapsed ? (
+                            ''
+                        ) : (
+                            <>
+                                <div className="flex size-8 items-center justify-center rounded-full border">
+                                    <UserOutlined />
+                                </div>
+                                <div className="flex flex-col">
+                                    <Typography.Text ellipsis style={{ maxWidth: 100, color: 'white' }}>
+                                        {auth.user.name}
+                                    </Typography.Text>
+                                    <p>Admin</p>
+                                </div>
+                            </>
+                        )}
+                        <Button type="text" className="p-0!" onClick={() => router.post(route(names.logout), {}, { preserveScroll: true })}>
+                            <LoginOutlined style={{ color: '#FF6A00' }} />
+                        </Button>
+                    </div>
+                </div>
             </Sider>
             {isMobile && (
                 <Drawer

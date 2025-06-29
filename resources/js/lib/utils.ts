@@ -21,5 +21,9 @@ export const names = {
     employees: {
         list: 'employees.list',
     },
-    login: 'login',
+    login: {
+        page: 'login',
+        action: 'login.post',
+    },
+    logout: 'logout',
 };

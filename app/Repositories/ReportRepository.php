@@ -18,13 +18,6 @@ class ReportRepository
             'period' => 'period',
         ];
 
-        $request->merge([
-            'sort' => [
-                'period' => 'asc'
-            ]
-        ]);
-
-
         return Report::whereYear('period', $year)
             ->with(['details' => fn($q) => $q->select('report_id', 'date')->groupBy('date', 'report_id')])
             ->selectRaw("

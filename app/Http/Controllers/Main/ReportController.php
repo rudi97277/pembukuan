@@ -29,6 +29,7 @@ class ReportController extends Controller
         $year = $request->input('year', date('Y'));
         $data = $this->repository->getPaginatedReports($request, $year);
 
+
         return Inertia::render('report', [
             'paginated' => $data,
             'sorted' => $request->sort ?? [],
