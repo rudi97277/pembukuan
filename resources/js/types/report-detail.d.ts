@@ -25,6 +25,8 @@ export interface IReportDetail {
     dinner: TMealSave;
     is_claim_save: boolean;
     quantity: number;
+    claim_total: number;
+    save_total: number;
 }
 
 export interface IReportDetailFetch {

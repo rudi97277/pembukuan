@@ -29,17 +29,20 @@ class DashboardController extends Controller
         $mealSave = $this->reportRepository->getMealSaveTotal($request);
         $mealSaveYearly = $this->reportRepository->getMealSaveTotalYearly($request);
 
-
         $trendGraph = $this->service->prepareTrendGraph();
 
         $trendMeal = 0;
         $trendSave = 0;
+        $trendClaim = 0;
+
         foreach ($mealSaveYearly as $item) {
             $trendGraph[$item->month]['Meal'] = $item->meal;
-            $trendGraph[$item->month]['Save'] = $item->save;
+            $trendGraph[$item->month]['Claim'] = $item->claim;
             $trendMeal += $item->meal;
             $trendSave += $item->save;
+            $trendClaim += $item->claim;
         }
+
 
 
         $graph = $this->service->prepareDashboardGraph();
@@ -56,17 +59,20 @@ class DashboardController extends Controller
             }
         }
 
+
         $divisionData = $this->reportRepository->getReportByDivision($request);
 
         return Inertia::render('dashboard', [
             'meal' => $graph['meal'],
             'save' => $graph['save'],
+            'claim' => $graph['claim'],
             'division_data' => $divisionData,
             'period' => $request->period,
             'trend' => [
                 'graph' => array_values($trendGraph),
+                'meal' => $trendMeal,
+                'claim' => $trendClaim,
                 'save' => $trendSave,
-                'meal' => $trendMeal
             ]
         ]);
     }

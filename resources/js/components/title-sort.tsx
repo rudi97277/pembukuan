@@ -14,9 +14,8 @@ export function TitleSort<T>(props: ITitleSort<T>) {
         asc: 'desc',
         desc: null,
     };
-    const cleared = Object.fromEntries(Object.entries(props.sorted).map(([key, _]) => [key, null])) as Partial<Record<keyof T, TSortDirection>>;
     const newSorted = {
-        ...cleared,
+        ...props.sorted,
         [props.name]: !direction ? 'asc' : target?.[direction],
     };
 

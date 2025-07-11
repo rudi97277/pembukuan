@@ -9,7 +9,7 @@ interface ITrendChartProps {
 }
 
 export function TrendChart(props: ITrendChartProps) {
-    const { graph: data, save, meal } = props.trend;
+    const { graph: data, claim, meal } = props.trend;
 
     const CustomDotMeal = ({ cx, cy, key }: ActiveDotProps) => {
         return (
@@ -39,7 +39,7 @@ export function TrendChart(props: ITrendChartProps) {
                         [{Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(meal)}]
                     </h3>
                     <h3 style={{ color: '#FF6A00' }}>
-                        [{Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(save)}]
+                        [{Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(claim)}]
                     </h3>
                 </div>
             </div>
@@ -74,7 +74,7 @@ export function TrendChart(props: ITrendChartProps) {
                         <Tooltip />
 
                         <Area type="monotone" dataKey="Meal" stroke="#8884d8" fill="url(#colorMeal)" dot={CustomDotMeal} />
-                        <Area type="monotone" dataKey="Save" stroke="#FF6A00" fill="url(#colorSave)" dot={CustomDotSave} />
+                        <Area type="monotone" dataKey="Claim" stroke="#FF6A00" fill="url(#colorSave)" dot={CustomDotSave} />
                         <Legend verticalAlign="bottom" />
                     </AreaChart>
                 </ResponsiveContainer>

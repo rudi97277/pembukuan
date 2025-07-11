@@ -5,7 +5,7 @@ import { VendorModal } from '@/components/vendor-modal';
 import AppLayout from '@/layouts/app-layout';
 import { names } from '@/lib/utils';
 import { IReportDetail, IReportDetailFetch, IReportDetailProps } from '@/types/report-detail';
-import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { DeleteOutlined, LeftOutlined, MoreOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
 import { Button, DatePicker, Flex, Form, Popover, Select, Switch } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
@@ -25,7 +25,6 @@ export default function ReportDetail(props: IReportDetailProps) {
     } = props;
 
     const [form] = Form.useForm();
-    const [type, setType] = useState<string>('vendor');
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     const handleChangeMeal = (report_id: number, detail_id: number, values: any) => {
@@ -97,7 +96,14 @@ export default function ReportDetail(props: IReportDetailProps) {
     };
 
     return (
-        <AppLayout header={`${dayjs(props.date).format('dddd, DD MMMM YYYY')}`}>
+        <AppLayout
+            header={
+                <Flex gap={8} align="center" className="h-full w-full">
+                    <Button variant="text" color="primary" icon={<LeftOutlined />} onClick={() => router.get(route(names.reports.index))} />
+                    <p>{dayjs(props.date).format('dddd, DD MMMM YYYY')}</p>
+                </Flex>
+            }
+        >
             <Head title="Report Detail" />
             <VendorModal
                 date={props.date}
@@ -180,6 +186,7 @@ export default function ReportDetail(props: IReportDetailProps) {
                             title: 'Breakfast',
                             dataIndex: 'breakfast',
                             key: 'breakfast',
+                            align: 'center',
                             render(v, r) {
                                 return <Meal value={v} onChange={(v) => handleChangeMeal(report_id, r.id, { breakfast: v })} />;
                             },
@@ -187,6 +194,7 @@ export default function ReportDetail(props: IReportDetailProps) {
                         {
                             title: 'Lunch',
                             dataIndex: 'lunch',
+                            align: 'center',
                             render(v, r) {
                                 return <Meal value={v} onChange={(v) => handleChangeMeal(report_id, r.id, { lunch: v })} />;
                             },
@@ -194,6 +202,7 @@ export default function ReportDetail(props: IReportDetailProps) {
                         {
                             title: 'Dinner',
                             dataIndex: 'dinner',
+                            align: 'center',
                             render(v, r) {
                                 return <Meal value={v} onChange={(v) => handleChangeMeal(report_id, r.id, { dinner: v })} />;
                             },
@@ -207,9 +216,18 @@ export default function ReportDetail(props: IReportDetailProps) {
                             },
                         },
                         {
+                            title: 'Claim Total',
+                            dataIndex: 'claim_total',
+                            key: 'claim-total',
+                            isSortable: true,
+                            width: 150,
+                            render: (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
+                        },
+                        {
                             title: 'Save Total',
                             dataIndex: 'save_total',
-                            key: 'save_total',
+                            key: 'save-total',
+                            width: 150,
                             isSortable: true,
                             render: (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
                         },

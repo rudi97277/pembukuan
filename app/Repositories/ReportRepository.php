@@ -22,7 +22,6 @@ class ReportRepository
             ->with(['details' => fn($q) => $q->select('report_id', 'date')->groupBy('date', 'report_id')])
             ->selectRaw("
                 id,
-                id as `key`,
                 period,
                 is_complete,
                 working_days
@@ -60,12 +59,14 @@ class ReportRepository
         }
     }
 
+
     public function getPaginatedReportDetails(Request $request, $id)
     {
         $sortTarget = [
             'name' => 'e.name',
             'division' => 'd.name',
-            'save_total' => 'save_total'
+            'save_total' => 'save_total',
+            'claim_total' => 'claim_total'
         ];
         return ReportDetail::where('report_details.report_id', $id)
             ->where('report_details.date', $request->date)
@@ -73,7 +74,6 @@ class ReportRepository
             ->join('divisions as d', 'd.id', 'e.division_id')
             ->when($request->keyword, fn($q) => $q->where('e.name', 'like', "%{$request->keyword}%"))
             ->selectRaw("
-                report_details.id as `key`,
                 report_details.id,
                 e.name,
                 d.name as division,
@@ -82,9 +82,14 @@ class ReportRepository
                 report_details.dinner,
                 report_details.is_claim_save,
                 (
-                    case when report_details.breakfast = 'Save' and report_details.is_claim_save = 1 then 40000*report_details.quantity else 0 end +
-                    case when report_details.lunch = 'Save' and report_details.is_claim_save = 1 then 60000*report_details.quantity else 0 end +
-                    case when report_details.dinner = 'Save' and report_details.is_claim_save = 1 then 60000*report_details.quantity else 0 end
+                    case when report_details.breakfast = 'Save' and report_details.is_claim_save then 40000*report_details.quantity else 0 end +
+                    case when report_details.lunch = 'Save' and report_details.is_claim_save then 60000*report_details.quantity else 0 end +
+                    case when report_details.dinner = 'Save' and report_details.is_claim_save then 60000*report_details.quantity else 0 end
+                ) as claim_total,
+                 (
+                    case when report_details.breakfast = 'Save' and !report_details.is_claim_save then 40000*report_details.quantity else 0 end +
+                    case when report_details.lunch = 'Save' and !report_details.is_claim_save then 60000*report_details.quantity else 0 end +
+                    case when report_details.dinner = 'Save' and !report_details.is_claim_save then 60000*report_details.quantity else 0 end
                 ) as save_total
             ")
             ->when($request->sort, function ($q) use ($request, $sortTarget) {
@@ -97,6 +102,49 @@ class ReportRepository
             ->when(!$request->sort, fn($q) => $q->orderBy('report_details.created_at', 'desc'))
             ->when($request->division, fn($q) => $q->where('d.name', $request->division))
             ->paginate($request->input('page_size', 10));
+    }
+
+    public function getAllReportDetail(Request $request)
+    {
+        $sortTarget = [
+            'name' => 'e.name',
+            'date' => 'report_details.date',
+            'division' => 'd.name',
+            'save_total' => 'save_total',
+            'claim_total' => 'claim_total'
+        ];
+
+        return ReportDetail::join('employees as e', 'e.id', 'report_details.employee_id')
+            ->join('divisions as d', 'd.id', 'e.division_id')
+            ->join('reports as r', 'r.id', 'report_details.report_id')
+            ->where('r.period', $request->period)
+            ->when($request->keyword, fn($q) => $q->where('e.name', 'like', "%{$request->keyword}%"))
+            ->selectRaw("
+                report_details.id,
+                e.name,
+                d.name as division,
+                report_details.date,
+                (
+                    case when report_details.breakfast = 'Save' and report_details.is_claim_save then 40000*report_details.quantity else 0 end +
+                    case when report_details.lunch = 'Save' and report_details.is_claim_save then 60000*report_details.quantity else 0 end +
+                    case when report_details.dinner = 'Save' and report_details.is_claim_save then 60000*report_details.quantity else 0 end
+                ) as claim_total,
+                 (
+                    case when report_details.breakfast = 'Save' and !report_details.is_claim_save then 40000*report_details.quantity else 0 end +
+                    case when report_details.lunch = 'Save' and !report_details.is_claim_save then 60000*report_details.quantity else 0 end +
+                    case when report_details.dinner = 'Save' and !report_details.is_claim_save then 60000*report_details.quantity else 0 end
+                ) as save_total
+            ")
+            ->when($request->sort, function ($q) use ($request, $sortTarget) {
+                foreach ($request->sort ?? [] as $key => $value) {
+                    if (($target = $sortTarget[$key] ?? null) && $value) {
+                        $q->orderBy($target, $value);
+                    }
+                }
+            })
+            ->when(!$request->sort, fn($q) => $q->orderBy('report_details.created_at', 'desc'))
+            ->when($request->division, fn($q) => $q->where('d.name', $request->division))
+            ->get();
     }
 
     public function getReportUsedDates($id)
@@ -113,11 +161,14 @@ class ReportRepository
         )
             ->selectRaw("
                 SUM(CASE WHEN breakfast = 'Meal' and is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_meal,
-                SUM(CASE WHEN breakfast = 'Save' and is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_save,
+                SUM(CASE WHEN breakfast = 'Save' and is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_claim,
+                SUM(CASE WHEN breakfast = 'Save' and !is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_save,
                 SUM(CASE WHEN lunch = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_meal,
-                SUM(CASE WHEN lunch = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_save,
+                SUM(CASE WHEN lunch = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_claim,
+                SUM(CASE WHEN lunch = 'Save' and !is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_save,
                 SUM(CASE WHEN dinner = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_meal,
-                SUM(CASE WHEN dinner = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
+                SUM(CASE WHEN dinner = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_claim,
+                SUM(CASE WHEN dinner = 'Save' and !is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
             ")
             ->get();
     }
@@ -133,7 +184,10 @@ class ReportRepository
                 SUM(CASE WHEN dinner = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) AS meal,
                 SUM(CASE WHEN breakfast = 'Save' and is_claim_save THEN 40000*quantity ELSE 0 END) +
                 SUM(CASE WHEN lunch = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) +
-                SUM(CASE WHEN dinner = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) as save
+                SUM(CASE WHEN dinner = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) as claim,
+                SUM(CASE WHEN breakfast = 'Save' and !is_claim_save THEN 40000*quantity ELSE 0 END) +
+                SUM(CASE WHEN lunch = 'Save' and !is_claim_save THEN 60000*quantity ELSE 0 END) +
+                SUM(CASE WHEN dinner = 'Save' and !is_claim_save THEN 60000*quantity ELSE 0 END) as save
             ")
             ->groupBy('month')
             ->orderBy('month', 'asc')
@@ -155,14 +209,17 @@ class ReportRepository
                     ->whereNull('rd.deleted_at')
             )
             ->selectRaw("
-                d.id as `key`,
+                d.id,
                 d.name as name,
                 SUM(CASE WHEN rd.breakfast = 'Meal' and rd.is_claim_save  THEN 40000*quantity ELSE 0 END) AS breakfast_meal,
-                SUM(CASE WHEN rd.breakfast = 'Save' and rd.is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_save,
+                SUM(CASE WHEN rd.breakfast = 'Save' and rd.is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_claim,
+                SUM(CASE WHEN rd.breakfast = 'Save' and !rd.is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_save,
                 SUM(CASE WHEN rd.lunch = 'Meal' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_meal,
-                SUM(CASE WHEN rd.lunch = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_save,
+                SUM(CASE WHEN rd.lunch = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_claim,
+                SUM(CASE WHEN rd.lunch = 'Save' and !rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_save,
                 SUM(CASE WHEN rd.dinner = 'Meal' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_meal,
-                SUM(CASE WHEN rd.dinner = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
+                SUM(CASE WHEN rd.dinner = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_claim,
+                SUM(CASE WHEN rd.dinner = 'Save' and !rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
             ")
             ->groupBy('d.id', 'd.name')
             ->get();

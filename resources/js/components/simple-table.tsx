@@ -58,6 +58,7 @@ export function SimpleTable<T>(props: ISimpleTableProps<T>) {
                     pagination={false}
                     dataSource={props.dataSource}
                     columns={newColumns}
+                    rowKey={'id'}
                 />
             </div>
             {props.pagination && (

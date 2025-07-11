@@ -42,6 +42,23 @@ class DashboardService
                     'data' => [],
                     'trend' => null
                 ],
+            ],
+            'claim' => [
+                'breakfast' => [
+                    'total' => 0,
+                    'data' => [],
+                    'trend' => null
+                ],
+                'lunch' => [
+                    'total' => 0,
+                    'data' => [],
+                    'trend' => null
+                ],
+                'dinner' => [
+                    'total' => 0,
+                    'data' => [],
+                    'trend' => null
+                ],
             ]
         ];
     }
@@ -55,7 +72,7 @@ class DashboardService
             $template[$start->format('m')] = [
                 "name" => $start->format('F'),
                 "Meal" => 0,
-                "Save" => 0
+                "Claim" => 0,
             ];
             $start->addMonthNoOverflow();
         }

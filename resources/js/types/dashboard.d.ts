@@ -1,5 +1,5 @@
 export type TMeal = 'breakfast' | 'lunch' | 'dinner';
-export type TMealSaveMini = 'meal' | 'save';
+export type TMealSaveMini = 'meal' | 'claim' | 'save';
 export type TMealData = {
     total: number;
     data: Array<number>;
@@ -21,13 +21,15 @@ export interface IDivisionData {
 
 export interface ITrend {
     graph: Array<{ name: string; Meal: number; Save: number }>;
-    save: number;
     meal: number;
+    claim: number;
+    save: number;
 }
 
 export interface IDashboardProps {
     meal: TMealCategory;
     save: TMealCategory;
+    claim: TMealCategory;
     division_data: Array<IDivisionData>;
     period: string;
     trend: ITrend;

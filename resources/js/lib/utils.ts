@@ -12,6 +12,7 @@ export const names = {
         store: 'reports.store',
         create: 'reports.create',
         show: 'reports.show',
+        employee: 'reports.employee',
         details: {
             update: 'reports.details.update',
             store: 'reports.details.store',

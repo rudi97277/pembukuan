@@ -44,7 +44,8 @@ class ReportController extends Controller
             'keyword' => 'nullable|string',
             'sort' => 'nullable|array',
             'sort.*' => 'nullable|string|in:asc,desc',
-            'date' => 'required|date'
+            'date' => 'required|date',
+            'division' => 'nullable|string'
         ]);
 
         $this->repository->generateReportDetails($request, $id);
@@ -145,5 +146,38 @@ class ReportController extends Controller
                 'is_complete' => false
             ]);
         }
+    }
+
+    public function reportEmployees(Request $request)
+    {
+        $request->validate([
+            'keyword' => 'nullable|string',
+            'sort' => 'nullable|array',
+            'sort.*' => 'nullable|string|in:asc,desc',
+            'period' => 'required|date',
+            'division' => 'nullable|string'
+        ]);
+
+        if (!$request->sort) {
+            $request->merge([
+                'sort' => [
+                    'date' => 'asc',
+                    'name' => 'asc'
+                ]
+            ]);
+        }
+
+
+        $data = $this->repository->getAllReportDetail($request);
+        $divisions = Division::selectRaw("name as label,name as value")->get();
+
+        return Inertia::render('report-employee', [
+            'sorted' => $request->sort ?? [],
+            'data' => $data,
+            'period' => $request->period,
+            'keyword' => $request->keyword,
+            'division' => $request->division,
+            'divisions' => $divisions
+        ]);
     }
 }

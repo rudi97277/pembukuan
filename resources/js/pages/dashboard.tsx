@@ -10,11 +10,11 @@ import { Head, router } from '@inertiajs/react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Button, Card, Col, DatePicker, Divider, Flex, Row, Segmented } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/id';
 import { capitalize, lowerCase } from 'lodash';
 import { Fragment, useState } from 'react';
 
 export default function Dashboard(props: IDashboardProps) {
-    const { meal, save } = props;
     const { isMobile } = useAppContext();
     const [type, setType] = useState<TMealSaveMini>('meal');
 
@@ -35,10 +35,10 @@ export default function Dashboard(props: IDashboardProps) {
                                 meal={props.meal}
                                 save={props.save}
                                 division_data={props.division_data}
-                                period={props.period !== null ? dayjs(props.period).format('MMMM YYYY') : dayjs().format('YYYY')}
+                                period={props.period !== null ? dayjs(props.period).locale('id').format('MMMM YYYY') : dayjs().format('YYYY')}
                             />
                         }
-                        fileName={`monthly-report-${dayjs(props.period || undefined).format('MMMM-YYYY')}.pdf`}
+                        fileName={`monthly-report-${dayjs(props.period || undefined).locale('id').format('MMMM-YYYY')}.pdf`}
                     >
                         {({ loading }) => (
                             <Button type="primary" className="bg-[#FF6A0020]! text-[#FF6A00]!">
@@ -57,73 +57,61 @@ export default function Dashboard(props: IDashboardProps) {
                 </div>
                 <TrendChart trend={props.trend} />
                 <Flex gap={20} className="flex-col lg:flex-row">
-                    <Card className="w-full shadow-sm">
-                        <div className="flex">
-                            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>Meal Total</h3>
-                            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }} className="ms-auto">
-                                {Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
-                                    meal.breakfast.total + meal.lunch.total + meal.dinner.total,
-                                )}
-                            </h3>
-                        </div>
-                        {(['breakfast', 'lunch', 'dinner'] as TMeal[]).map((item, idx) => (
-                            <Fragment key={idx}>
-                                <Row key={idx} style={{ fontWeight: 600, fontSize: 16 }}>
-                                    <Col span={6}>{capitalize(item)}</Col>
-                                    <Col span={8} className="text-right">
-                                        {Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
-                                            meal[item as TMeal].total,
-                                        )}
-                                        {meal[item as TMeal].trend === 'up' ? (
-                                            <ArrowUpOutlined style={{ color: 'green', marginLeft: 5 }} />
-                                        ) : (
-                                            <ArrowDownOutlined style={{ color: 'red', marginLeft: 5 }} />
-                                        )}
-                                    </Col>
-                                    <Col span={10} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <TinyAreaChart key={idx} data={meal[item as TMeal].data} />
-                                    </Col>
-                                </Row>
-                                {idx !== 2 && <Divider style={{ margin: 6 }} />}
-                            </Fragment>
-                        ))}
-                    </Card>
-                    <Card className="w-full shadow-sm">
-                        <div className="flex">
-                            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>Save Total</h3>
-                            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }} className="ms-auto">
-                                {Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
-                                    save.breakfast.total + save.lunch.total + save.dinner.total,
-                                )}
-                            </h3>
-                        </div>
-                        {(['breakfast', 'lunch', 'dinner'] as TMeal[]).map((item, idx) => (
-                            <Fragment key={idx}>
-                                <Row style={{ fontWeight: 600, fontSize: 16 }}>
-                                    <Col key={idx} span={6}>
-                                        {capitalize(item)}
-                                    </Col>
-                                    <Col span={8} className="text-right">
-                                        {Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
-                                            save[item as TMeal].total,
-                                        )}
-                                        {save[item as TMeal].trend === 'up' ? (
-                                            <ArrowUpOutlined style={{ color: 'green', marginLeft: 5 }} />
-                                        ) : (
-                                            <ArrowDownOutlined style={{ color: 'red', marginLeft: 5 }} />
-                                        )}
-                                    </Col>
-                                    <Col span={10} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <TinyAreaChart data={save[item as TMeal].data} />
-                                    </Col>
-                                </Row>
-                                {idx !== 2 && <Divider style={{ margin: 6 }} />}
-                            </Fragment>
-                        ))}
-                    </Card>
+                    {[
+                        {
+                            title: 'Meal Total',
+                            key: 'meal' as const,
+                        },
+                        {
+                            title: 'Claim Total',
+                            key: 'claim' as const,
+                        },
+                        {
+                            title: 'Save Total',
+                            key: 'save' as const,
+                        },
+
+                    ].map((part, _idx) => (
+                        <Card className="w-full shadow-sm" key={_idx}>
+                            <div className="flex">
+                                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>{part.title}</h3>
+                                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }} className="ms-auto">
+                                    {Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
+                                        props?.[part.key].breakfast.total + props?.[part.key].lunch.total + props?.[part.key].dinner.total,
+                                    )}
+                                </h3>
+                            </div>
+                            {(['breakfast', 'lunch', 'dinner'] as TMeal[]).map((item, idx) => (
+                                <Fragment key={idx}>
+                                    <Row key={idx} style={{ fontWeight: 600, fontSize: 16 }}>
+                                        <Col span={6}>{capitalize(item)}</Col>
+                                        <Col span={8} className="text-right">
+                                            {Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
+                                                props?.[part.key][item as TMeal].total,
+                                            )}
+                                            {props?.[part.key][item as TMeal].trend === 'up' ? (
+                                                <ArrowUpOutlined style={{ color: 'green', marginLeft: 5 }} />
+                                            ) : (
+                                                <ArrowDownOutlined style={{ color: 'red', marginLeft: 5 }} />
+                                            )}
+                                        </Col>
+                                        <Col span={10} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <TinyAreaChart key={idx} data={props?.[part.key][item as TMeal].data} />
+                                        </Col>
+                                    </Row>
+                                    {idx !== 2 && <Divider style={{ margin: 6 }} />}
+                                </Fragment>
+                            ))}
+                        </Card>
+                    ))}
                 </Flex>
                 <div style={{ marginTop: 20 }}>
-                    <Segmented style={{ marginBottom: 20 }} options={['Meal', 'Save']} onChange={(v) => setType(lowerCase(v) as TMealSaveMini)} />
+                    <Segmented
+                        style={{ marginBottom: 20 }}
+                        options={['Meal', 'Claim', 'Save',]}
+                        onChange={(v) => setType(lowerCase(v).replace(' ', '') as TMealSaveMini)}
+                    />
+
                     <SimpleTable
                         isPadding={false}
                         dataSource={props.division_data}
@@ -139,12 +127,14 @@ export default function Dashboard(props: IDashboardProps) {
                                 dataIndex: 'name',
                                 title: 'Division',
                                 key: 'name',
+                                width: '10%',
                             },
                             {
                                 dataIndex: `breakfast_${type}`,
                                 title: 'Breakfast',
                                 key: 'breakfast',
                                 align: 'right',
+                                width: '30%',
                                 render: (v) => Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
                             },
                             {
@@ -152,6 +142,7 @@ export default function Dashboard(props: IDashboardProps) {
                                 title: 'Lunch',
                                 key: 'lunch',
                                 align: 'right',
+                                width: '30%',
                                 render: (v) => Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
                             },
                             {
@@ -159,6 +150,7 @@ export default function Dashboard(props: IDashboardProps) {
                                 title: 'Dinner',
                                 key: 'dinner',
                                 align: 'right',
+                                width: '30%',
                                 render: (v) => Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
                             },
                         ]}

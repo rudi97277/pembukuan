@@ -15,6 +15,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::delete('reports/{report}/details/{detail}', [ReportController::class, 'deleteDetail'])->name('reports.details.delete');
+    Route::get('reports/employee', [ReportController::class, 'reportEmployees'])->name('reports.employee');
     Route::put('reports/{report}/details/{detail}', [ReportController::class, 'updateDetail'])->name('reports.details.update');
     Route::post('reports/{report}', [ReportController::class, 'storeDetail'])->name('reports.details.store');
     Route::resource('reports', ReportController::class);

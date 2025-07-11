@@ -5,14 +5,13 @@ import MenuFold from '@svg/menu-fold.svg';
 import { Button, Divider, Drawer, Flex, Image, Layout, Menu, Typography } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 import { Content, Header } from 'antd/es/layout/layout';
-import { type ReactNode } from 'react';
+import { JSX, type ReactNode } from 'react';
 import { useAppContext } from './app-provider';
 import MenuItem from './menu-item';
 
 interface AppLayoutProps {
     children: ReactNode;
-    header?: string;
-    auth: any;
+    header?: string | ReactNode | JSX.Element;
 }
 
 const menus = [

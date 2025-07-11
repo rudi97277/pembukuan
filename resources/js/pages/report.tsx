@@ -3,11 +3,11 @@ import { SimpleTable } from '@/components/simple-table';
 import AppLayout from '@/layouts/app-layout';
 import { names } from '@/lib/utils';
 import { IReport, IReportFetch, IReportProps } from '@/types/report';
-import { DeleteOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { FileOutlined, PlusOutlined } from '@ant-design/icons';
 import { Head, router } from '@inertiajs/react';
 import Done from '@svg/done.svg';
 import NotComplete from '@svg/not_complete.svg';
-import { Button, Calendar, DatePicker, Flex, Popover } from 'antd';
+import { Button, Calendar, DatePicker, Flex, Popover, Tooltip } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { debounce } from 'lodash';
 import { useMemo } from 'react';
@@ -159,25 +159,13 @@ export default function Report(props: IReportProps) {
                             title: 'Action',
                             dataIndex: '',
                             key: 'action',
+                            align: 'center',
+                            width: 100,
                             render: (_, r) => {
                                 return (
-                                    <Popover
-                                        classNames={{ body: 'p-0!' }}
-                                        trigger="click"
-                                        content={() => (
-                                            <Flex vertical align="center" justify="center" gap={1}>
-                                                <Button
-                                                    className="rounded-b-none! border-none! p-6! hover:!bg-[#FD79001A] focus:bg-[#FD79001A]"
-                                                    type="text"
-                                                >
-                                                    <DeleteOutlined style={{ color: 'red', marginRight: 4 }} />
-                                                    Delete
-                                                </Button>
-                                            </Flex>
-                                        )}
-                                    >
-                                        <MoreOutlined style={{ color: '#FD7900', fontSize: 20 }} />
-                                    </Popover>
+                                    <Tooltip title="Report Employee">
+                                        <Button variant='filled' color='blue' icon={<FileOutlined />} onClick={() => router.get(route(names.reports.employee), { period: r.period })}></Button>
+                                    </Tooltip>
                                 );
                             },
                         },
