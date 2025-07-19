@@ -5,6 +5,7 @@ export interface IReportEmployee {
     name: string;
     division: string;
     date: string;
+    meal_total: number;
     claim_total: number;
     save_total: number;
 }

@@ -9,5 +9,17 @@ interface IMealProps {
 }
 
 export function Meal(props: IMealProps): JSX.Element {
-    return <Segmented className={props?.className || ''} options={['Meal', 'Save']} value={props.value} onChange={props.onChange} />;
+    return (
+        <Segmented
+            className={props?.className || ''}
+            options={['Meal', 'Save'] as TMealSave[]}
+            value={props.value}
+            onClick={(e: any) => {
+                if ((e.target.title === 'Meal' || e.target.title === 'Save') && props.value === e.target.title) {
+                    props.onChange?.(props.value);
+                }
+            }}
+            onChange={props.onChange}
+        />
+    );
 }

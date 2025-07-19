@@ -80,8 +80,21 @@ class ReportController extends Controller
             'report_id' => $reportId
         ])->first();
 
-        $reportDetail->update($request->only('breakfast', 'lunch', 'dinner', 'is_claim_save'));
-        Employee::where('id', $reportDetail->employee_id)->update($request->only('breakfast', 'lunch', 'dinner', 'is_claim_save'));
+        $update = [
+            'is_claim_save' => $request->is_claim_save ?? $reportDetail->is_claim_save
+        ];
+
+        if ($request->breakfast) {
+            $update['breakfast'] = $request->breakfast  == $reportDetail->breakfast ? null : $request->breakfast;
+        } else if ($request->lunch) {
+            $update['lunch'] = $request->lunch  == $reportDetail->lunch ? null : $request->lunch;
+        } else if ($request->dinner) {
+            $update['dinner'] = $request->dinner  == $reportDetail->dinner ? null : $request->dinner;
+        }
+
+
+        $reportDetail->update($update);
+        Employee::where('id', $reportDetail->employee_id)->update($update);
     }
 
     public function storeDetail(Request $request, int $reportId)

@@ -34,11 +34,14 @@ export default function Dashboard(props: IDashboardProps) {
                             <MonthlyReport
                                 meal={props.meal}
                                 save={props.save}
+                                claim={props.claim}
                                 division_data={props.division_data}
                                 period={props.period !== null ? dayjs(props.period).locale('id').format('MMMM YYYY') : dayjs().format('YYYY')}
                             />
                         }
-                        fileName={`monthly-report-${dayjs(props.period || undefined).locale('id').format('MMMM-YYYY')}.pdf`}
+                        fileName={`monthly-report-${dayjs(props.period || undefined)
+                            .locale('id')
+                            .format('MMMM-YYYY')}.pdf`}
                     >
                         {({ loading }) => (
                             <Button type="primary" className="bg-[#FF6A0020]! text-[#FF6A00]!">
@@ -70,7 +73,6 @@ export default function Dashboard(props: IDashboardProps) {
                             title: 'Save Total',
                             key: 'save' as const,
                         },
-
                     ].map((part, _idx) => (
                         <Card className="w-full shadow-sm" key={_idx}>
                             <div className="flex">
@@ -108,7 +110,7 @@ export default function Dashboard(props: IDashboardProps) {
                 <div style={{ marginTop: 20 }}>
                     <Segmented
                         style={{ marginBottom: 20 }}
-                        options={['Meal', 'Claim', 'Save',]}
+                        options={['Meal', 'Claim', 'Save']}
                         onChange={(v) => setType(lowerCase(v).replace(' ', '') as TMealSaveMini)}
                     />
 
