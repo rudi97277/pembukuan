@@ -1,8 +1,8 @@
-import { IReportEmployee } from "@/types/report-employee";
-import { Document, Page, Text, View } from "@react-pdf/renderer";
-import dayjs from "dayjs";
+import { IReportEmployee } from '@/types/report-employee';
+import { Document, Page, Text, View } from '@react-pdf/renderer';
+import dayjs from 'dayjs';
 import 'dayjs/locale/id';
-import { TableReport } from "./table-report";
+import { TableReport } from './table-report';
 
 interface IEmployeeReportProps {
     period: string;
@@ -44,25 +44,29 @@ export function EmployeeReport(props: IEmployeeReportProps) {
                             key: 'date',
                             title: 'Date',
                             dataIndex: 'date',
-                            type: "date"
+                            type: 'date',
+                        },
+                        {
+                            key: 'meal',
+                            title: 'Meal total',
+                            dataIndex: 'meal_total',
+                            type: 'number',
                         },
                         {
                             key: 'claim',
                             title: 'Claim total',
                             dataIndex: 'claim_total',
-                            type: 'number'
+                            type: 'number',
                         },
                         {
                             key: 'save',
                             title: 'Save total',
                             dataIndex: 'save_total',
-                            type: 'number'
+                            type: 'number',
                         },
                     ]}
                 />
-
-
             </Page>
         </Document>
-    )
+    );
 }

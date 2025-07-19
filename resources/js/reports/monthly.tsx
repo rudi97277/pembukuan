@@ -8,6 +8,7 @@ interface IMonthlyReportProps {
     division_data: Array<IDivisionData>;
     meal: TMealCategory;
     save: TMealCategory;
+    claim: TMealCategory;
 }
 
 interface IDivisionTable {
@@ -20,7 +21,8 @@ export function MonthlyReport(props: IMonthlyReportProps) {
     let divisionTable: {
         meal: Array<IDivisionTable>;
         save: Array<IDivisionTable>;
-    } = { meal: [], save: [] };
+        claim: Array<IDivisionTable>;
+    } = { meal: [], save: [], claim: [] };
 
     props.division_data.forEach((item) => {
         divisionTable.meal.push({
@@ -36,24 +38,35 @@ export function MonthlyReport(props: IMonthlyReportProps) {
             lunch: item.lunch_save,
             dinner: item.dinner_save,
         });
+
+        divisionTable.claim.push({
+            name: item.name,
+            breakfast: item.breakfast_save,
+            lunch: item.lunch_save,
+            dinner: item.dinner_save,
+        });
     });
 
     const mealTypes = ['breakfast', 'lunch', 'dinner'] as TMeal[];
     var saveTotal = 0;
     var mealTotal = 0;
+    var claimTotal = 0;
     const summary = mealTypes.map((type) => {
         saveTotal += props.save[type].total;
         mealTotal += props.meal[type].total;
+        claimTotal += props.claim[type].total;
         return {
             type: type.charAt(0).toUpperCase() + type.slice(1),
             meal: props.meal[type].total,
             save: props.save[type].total,
+            claim: props.claim[type].total,
         };
     });
     summary.push({
         type: 'Total',
         meal: mealTotal,
         save: saveTotal,
+        claim: claimTotal,
     });
 
     return (
@@ -81,13 +94,19 @@ export function MonthlyReport(props: IMonthlyReportProps) {
                             dataIndex: 'type',
                         },
                         {
-                            key: 'breakfast',
+                            key: 'meal',
                             title: 'Meal Total',
                             dataIndex: 'meal',
                             type: 'number',
                         },
                         {
-                            key: 'lunch',
+                            key: 'claim',
+                            title: 'Claim Total',
+                            dataIndex: 'claim',
+                            type: 'number',
+                        },
+                        {
+                            key: 'save',
                             title: 'Save Total',
                             dataIndex: 'save',
                             type: 'number',

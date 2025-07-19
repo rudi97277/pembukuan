@@ -14,15 +14,7 @@ import { debounce } from 'lodash';
 import { useMemo } from 'react';
 
 export default function ReportEmployee(props: IReportEmployeeProps) {
-    const {
-        data,
-        keyword,
-        period,
-        division,
-        divisions,
-        sorted,
-    } = props;
-
+    const { data, keyword, period, division, divisions, sorted } = props;
 
     const fetchData = (props: IReportEmployeeFetch) => {
         router.get(
@@ -56,13 +48,10 @@ export default function ReportEmployee(props: IReportEmployeeProps) {
                     <p>Report Employee</p>
                 </Flex>
             }
-
         >
-
             <Head title="Report Employee" />
 
             <div className="rounded-2xl p-4">
-
                 <SimpleTable<IReportEmployee>
                     dataSource={data}
                     fetchData={fetchData}
@@ -76,7 +65,11 @@ export default function ReportEmployee(props: IReportEmployeeProps) {
                                         document={
                                             <EmployeeReport
                                                 employee_data={data}
-                                                period={props.period !== null ? dayjs(props.period).locale('id').format('MMMM YYYY') : dayjs().format('YYYY')}
+                                                period={
+                                                    props.period !== null
+                                                        ? dayjs(props.period).locale('id').format('MMMM YYYY')
+                                                        : dayjs().format('YYYY')
+                                                }
                                             />
                                         }
                                         fileName={`monthly-report-${dayjs(props.period || undefined).format('MMMM-YYYY')}.pdf`}
@@ -102,7 +95,6 @@ export default function ReportEmployee(props: IReportEmployeeProps) {
                                             ...divisions,
                                         ]}
                                     />
-
                                 </Flex>
                             </Flex>
                         );
@@ -138,6 +130,14 @@ export default function ReportEmployee(props: IReportEmployeeProps) {
                             render(v) {
                                 return new Date(v).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: '2-digit' });
                             },
+                        },
+                        {
+                            title: 'Meal Total',
+                            dataIndex: 'meal_total',
+                            key: 'meal-total',
+                            isSortable: true,
+                            width: 150,
+                            render: (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v),
                         },
                         {
                             title: 'Claim Total',

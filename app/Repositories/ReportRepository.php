@@ -52,7 +52,7 @@ class ReportRepository
                     'updated_at' => now(),
                     'created_at' => now(),
                     'employee_id' => $employee->id,
-                    ...$employee->only('breakfast', 'lunch', 'dinner', 'is_claim_save')
+                    // ...$employee->only('breakfast', 'lunch', 'dinner', 'is_claim_save')
                 ];
             }
             ReportDetail::insert($inserts);
@@ -118,12 +118,22 @@ class ReportRepository
             ->join('divisions as d', 'd.id', 'e.division_id')
             ->join('reports as r', 'r.id', 'report_details.report_id')
             ->where('r.period', $request->period)
+            ->where(
+                fn($query) => $query->whereNotNull('report_details.breakfast')
+                    ->orWhereNotNull('report_details.lunch')
+                    ->orWhereNotNull('report_details.dinner')
+            )
             ->when($request->keyword, fn($q) => $q->where('e.name', 'like', "%{$request->keyword}%"))
             ->selectRaw("
                 report_details.id,
                 e.name,
                 d.name as division,
                 report_details.date,
+                (
+                    case when report_details.breakfast = 'Meal' then 40000*report_details.quantity else 0 end +
+                    case when report_details.lunch = 'Meal' then 60000*report_details.quantity else 0 end +
+                    case when report_details.dinner = 'Meal' then 60000*report_details.quantity else 0 end
+                ) as meal_total,
                 (
                     case when report_details.breakfast = 'Save' and report_details.is_claim_save then 40000*report_details.quantity else 0 end +
                     case when report_details.lunch = 'Save' and report_details.is_claim_save then 60000*report_details.quantity else 0 end +
@@ -160,13 +170,13 @@ class ReportRepository
             fn($q) => $q->whereRaw('DATE_FORMAT(date, "%Y-%m") = ?', [$request->period])
         )
             ->selectRaw("
-                SUM(CASE WHEN breakfast = 'Meal' and is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_meal,
+                SUM(CASE WHEN breakfast = 'Meal' THEN 40000*quantity ELSE 0 END) AS breakfast_meal,
                 SUM(CASE WHEN breakfast = 'Save' and is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_claim,
                 SUM(CASE WHEN breakfast = 'Save' and !is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_save,
-                SUM(CASE WHEN lunch = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_meal,
+                SUM(CASE WHEN lunch = 'Meal' THEN 60000*quantity ELSE 0 END) AS lunch_meal,
                 SUM(CASE WHEN lunch = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_claim,
                 SUM(CASE WHEN lunch = 'Save' and !is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_save,
-                SUM(CASE WHEN dinner = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_meal,
+                SUM(CASE WHEN dinner = 'Meal' THEN 60000*quantity ELSE 0 END) AS dinner_meal,
                 SUM(CASE WHEN dinner = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_claim,
                 SUM(CASE WHEN dinner = 'Save' and !is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
             ")
@@ -179,9 +189,9 @@ class ReportRepository
         return ReportDetail::whereYear('date', $year)
             ->selectRaw("
                 DATE_FORMAT(date, '%m') as month,
-                SUM(CASE WHEN breakfast = 'Meal' and is_claim_save THEN 40000*quantity ELSE 0 END) +
-                SUM(CASE WHEN lunch = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) +
-                SUM(CASE WHEN dinner = 'Meal' and is_claim_save THEN 60000*quantity ELSE 0 END) AS meal,
+                SUM(CASE WHEN breakfast = 'Meal' THEN 40000*quantity ELSE 0 END) +
+                SUM(CASE WHEN lunch = 'Meal' THEN 60000*quantity ELSE 0 END) +
+                SUM(CASE WHEN dinner = 'Meal' THEN 60000*quantity ELSE 0 END) AS meal,
                 SUM(CASE WHEN breakfast = 'Save' and is_claim_save THEN 40000*quantity ELSE 0 END) +
                 SUM(CASE WHEN lunch = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) +
                 SUM(CASE WHEN dinner = 'Save' and is_claim_save THEN 60000*quantity ELSE 0 END) as claim,
@@ -211,13 +221,13 @@ class ReportRepository
             ->selectRaw("
                 d.id,
                 d.name as name,
-                SUM(CASE WHEN rd.breakfast = 'Meal' and rd.is_claim_save  THEN 40000*quantity ELSE 0 END) AS breakfast_meal,
+                SUM(CASE WHEN rd.breakfast = 'Meal' THEN 40000*quantity ELSE 0 END) AS breakfast_meal,
                 SUM(CASE WHEN rd.breakfast = 'Save' and rd.is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_claim,
                 SUM(CASE WHEN rd.breakfast = 'Save' and !rd.is_claim_save THEN 40000*quantity ELSE 0 END) AS breakfast_save,
-                SUM(CASE WHEN rd.lunch = 'Meal' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_meal,
+                SUM(CASE WHEN rd.lunch = 'Meal' THEN 60000*quantity ELSE 0 END) AS lunch_meal,
                 SUM(CASE WHEN rd.lunch = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_claim,
                 SUM(CASE WHEN rd.lunch = 'Save' and !rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS lunch_save,
-                SUM(CASE WHEN rd.dinner = 'Meal' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_meal,
+                SUM(CASE WHEN rd.dinner = 'Meal' THEN 60000*quantity ELSE 0 END) AS dinner_meal,
                 SUM(CASE WHEN rd.dinner = 'Save' and rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_claim,
                 SUM(CASE WHEN rd.dinner = 'Save' and !rd.is_claim_save THEN 60000*quantity ELSE 0 END) AS dinner_save
             ")
